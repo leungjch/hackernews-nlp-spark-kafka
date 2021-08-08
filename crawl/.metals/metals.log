@@ -1,0 +1,9 @@
+[0m2021.08.02 12:22:22 INFO  Started: Metals version 0.10.5 in workspace '/home/leungjch/Documents/uw/repos/hacker-news/crawl' for client Visual Studio Code 1.57.1.[0m
+[0m2021.08.02 12:22:24 INFO  time: initialize in 1.68s[0m
+[0m2021.08.02 12:22:24 WARN  Build server is not auto-connectable.[0m
+[0m2021.08.02 12:22:24 WARN  no build tool detected in workspace '/home/leungjch/Documents/uw/repos/hacker-news/crawl'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+[0m2021.08.02 12:36:39 INFO  Started: Metals version 0.10.5 in workspace '/home/leungjch/Documents/uw/repos/hacker-news/crawl' for client Visual Studio Code 1.57.1.[0m
+[0m2021.08.02 12:36:44 INFO  time: initialize in 5.61s[0m
+[0m2021.08.02 12:36:46 WARN  Build server is not auto-connectable.[0m
+[0m2021.08.02 12:36:46 WARN  no build tool detected in workspace '/home/leungjch/Documents/uw/repos/hacker-news/crawl'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+[0m2021.08.02 12:39:24 INFO  shutting down Metals[0m
