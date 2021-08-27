@@ -8099,3 +8099,5 @@ INFO: Unsupported notification method: $/setTrace
 [0m2021.08.26 22:27:38 WARN  no build target for: /home/leungjch/Documents/uw/repos/hacker-news/process/app/src/main/scala/Main.scala[0m
 [0m2021.08.26 22:28:34 WARN  no build target for: /home/leungjch/Documents/uw/repos/hacker-news/process/app/src/main/scala/Main.scala[0m
 [0m2021.08.26 22:30:28 WARN  no build target for: /home/leungjch/Documents/uw/repos/hacker-news/process/app/src/main/scala/Main.scala[0m
+Aug. 26, 2021 10:33:58 P.M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 216

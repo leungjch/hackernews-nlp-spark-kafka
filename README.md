@@ -18,3 +18,9 @@ Lastly, run the Spark compute pipeline (a Kafka consumer)
 cd process/app
 sbt run
 ```
+
+# Debugging memory errors
+If you run into problems with OutOfMemoryError, try running
+```shell
+export SBT_OPTS="-Xms1024M -Xmx4G -Xss2M -XX:MaxMetaspaceSize=2G"
+```
