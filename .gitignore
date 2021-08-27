@@ -1,3 +1,5 @@
 ../data
 *.json
 **/target/
+./crawl/main/data
+./.git/objects/pack/tmp_pack_Ppp3zL

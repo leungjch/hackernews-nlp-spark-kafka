@@ -97,13 +97,20 @@ object Main {
     //   .setInputCol("raw_tf")
     //   .setOutputCol("tf_idf")
 
-    // val embeddings = BertEmbeddings
-    //   .pretrained("small_bert_L2_128", "en")
-    //   .setInputCols("raw_words", "document")
-    //   .setOutputCol("bert_embeddings")
+    val embeddings = BertEmbeddings
+      .pretrained("small_bert_L2_128", "en")
+      .setInputCols("token", "document")
+      .setOutputCol("bert_embeddings")
 
     val pipeline = new Pipeline()
-      .setStages(Array(documentAssembler, sentence, tokenizer))
+      .setStages(
+        Array(
+          documentAssembler,
+          sentence,
+          tokenizer,
+          embeddings
+        )
+      )
       .fit(fillnaDf)
 
     val result = pipeline.transform(fillnaDf)
