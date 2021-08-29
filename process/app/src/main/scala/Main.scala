@@ -7,7 +7,9 @@ import org.apache.spark.ml.Pipeline
 import com.johnsnowlabs.nlp.annotators.sda.pragmatic.SentimentDetector
 import com.johnsnowlabs.nlp.embeddings.BertEmbeddings
 import com.johnsnowlabs.nlp.base.DocumentAssembler
-import com.johnsnowlabs.nlp.annotators.Tokenizer
+import com.johnsnowlabs.nlp.annotators.{Tokenizer => JohnSnowTokenizer}
+import org.apache.spark.ml.feature.Tokenizer;
+
 import com.johnsnowlabs.nlp.annotator.SentenceDetector
 
 object Main {
@@ -48,7 +50,7 @@ object Main {
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
       .option("subscribe", "hn_topic")
-      .option("startingOffsets", "earliest") // From starting
+      .option("startingOffsets", "latest") // From starting
       .load()
 
     // // Convert bytes to string and parse the json
@@ -61,7 +63,7 @@ object Main {
 
     // Fill na values
     val fillnaDf = processedDf.na
-      .fill("hello world!", Seq("text", "title", "url", "by", "type"))
+      .fill("", Seq("text", "title", "url", "by", "type"))
       .na
       .fill(0, Seq("score"))
       .withColumn("time", $"time".cast(TimestampType))
@@ -80,22 +82,25 @@ object Main {
       .setOutputCol("sentence")
 
     val tokenizer = new Tokenizer()
+      .setInputCol("text")
+      .setOutputCol("tokens")
+
+    val johnSnowTokenizer = new JohnSnowTokenizer()
       .setInputCols("sentence")
       .setOutputCol("token")
-
     // Setup stope words remover
     // val remover = new StopWordsRemover()
-    //   .setInputCol("raw_words")
-    //   .setOutputCol("filtered_words")
+    //   .setInputCol("token")
+    //   .setOutputCol("filtered_token")
 
     // Get term frequency
-    // val hashingTF = new HashingTF()
-    //   .setInputCol("raw_words")
-    //   .setOutputCol("raw_tf")
+    val hashingTF = new HashingTF()
+      .setInputCol("tokens")
+      .setOutputCol("raw_tf")
 
-    // val idf = new IDF()
-    //   .setInputCol("raw_tf")
-    //   .setOutputCol("tf_idf")
+    val idf = new IDF()
+      .setInputCol("raw_tf")
+      .setOutputCol("tf_idf")
 
     val embeddings = BertEmbeddings
       .pretrained("small_bert_L2_128", "en")
@@ -108,12 +113,16 @@ object Main {
           documentAssembler,
           sentence,
           tokenizer,
+          johnSnowTokenizer,
+          // remover,
+          hashingTF,
           embeddings
         )
       )
       .fit(fillnaDf)
 
     val result = pipeline.transform(fillnaDf)
+
     // result.show()
 
     // cleanDf.printSchema()
@@ -124,20 +133,14 @@ object Main {
 
     // // Compute
     // // Word count
-    // val wordOccurrence = cleanDf
-    //   .withColumn("wordCount", explode(cleanDf("raw_words")))
-    //   .withWatermark("time", "10 minutes")
-    //   .groupBy("wordCount")
-    //   .count()
-
+    // val wordCount = result
+    //   .withColumn("wordCount", size(col("token")))
     val query = result.writeStream
-      .outputMode("update")
+      .outputMode("append")
       .format("console")
-      .trigger(Trigger.ProcessingTime(0))
-      .option("truncate", "false")
-      .start
-
-    query.awaitTermination()
+      .option("truncate", "true")
+      .start()
+      .awaitTermination()
 
     spark.stop
 
