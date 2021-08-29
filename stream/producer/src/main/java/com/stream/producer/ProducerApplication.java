@@ -49,7 +49,9 @@ public class ProducerApplication {
 						currentId = latestId;
 						continue;
 					} else {
+
 						System.out.println(latestId);
+						Thread.sleep(2000); // Delay before we send the request to prevent requesting null data
 
 						// Assumption, latestId > currentId
 						// Fetch the new data
@@ -60,7 +62,11 @@ public class ProducerApplication {
 							ProducerRecord<String, String> data = new ProducerRecord<String, String>("hn_topic", key,
 									hnData);
 							System.out.println("sending topic for index " + i);
+							System.out.println(hnData);
+
 							producer.send(data);
+
+							Thread.sleep(1000);
 
 						}
 						currentId = latestId;
