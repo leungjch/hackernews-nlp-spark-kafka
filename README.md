@@ -19,6 +19,8 @@ cd process/app
 sbt run
 ```
 
+The Spark UI is at [http://localhost:4040](http://localhost:4040)
+
 # Debugging memory errors
 If you run into problems with OutOfMemoryError, try running
 ```shell
