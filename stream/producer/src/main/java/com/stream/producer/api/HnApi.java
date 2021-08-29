@@ -39,4 +39,10 @@ public class HnApi {
         return ret;
     }
 
+    public int getLatestId() throws IOException, InterruptedException {
+        String ret = sendRequest("/maxitem.json");
+
+        return Integer.parseInt(ret);
+    }
+
 }

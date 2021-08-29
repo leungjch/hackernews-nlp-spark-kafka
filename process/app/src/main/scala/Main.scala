@@ -36,7 +36,7 @@ object Main {
     val spark = SparkSession.builder
       .appName("Simple Application")
       .config("spark.master", "local")
-      .config("spark.driver.memory", "15g")
+      .config("spark.driver.memory", "8g")
       .config("spark.executor.memory", "6g")
       .getOrCreate()
 

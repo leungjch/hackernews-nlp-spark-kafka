@@ -36,23 +36,42 @@ public class ProducerApplication {
 
 		KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
+		// Set to null initially
+		int currentId = -1;
 		HnApi hnApi = new HnApi();
 		try {
 			while (true) {
-				for (int i = 19457630; i > 0; i--) {
-					String hnData = hnApi.getById(i);
-					if (i % 1000 == 0) {
-						System.out.println(i);
-					}
-					String key = Long.toString(starterId++);
-					ProducerRecord<String, String> data = new ProducerRecord<String, String>("hn_topic", key, hnData);
-					System.out.println("sending topic");
-					producer.send(data);
-					long wait = Math.round(Math.random() * 25);
-					Thread.sleep(wait);
 
-					Thread.sleep(1000);
+				int latestId = hnApi.getLatestId();
+				// If new id
+				if (currentId != latestId) {
+					if (currentId == -1) {
+						currentId = latestId;
+						continue;
+					} else {
+						System.out.println(latestId);
+
+						// Assumption, latestId > currentId
+						// Fetch the new data
+						for (int i = currentId + 1; i <= latestId; i++) {
+							String hnData = hnApi.getById(i);
+
+							String key = Long.toString(i);
+							ProducerRecord<String, String> data = new ProducerRecord<String, String>("hn_topic", key,
+									hnData);
+							System.out.println("sending topic for index " + i);
+							producer.send(data);
+
+						}
+						currentId = latestId;
+
+					}
+
 				}
+				long wait = Math.round(Math.random() * 25);
+				Thread.sleep(wait);
+
+				Thread.sleep(1000);
 
 			}
 		} catch (Exception e) {
