@@ -4,7 +4,9 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.spark.ml.feature.{StopWordsRemover, HashingTF, IDF}
 import org.apache.spark.ml.Pipeline
-import com.johnsnowlabs.nlp.annotators.sda.pragmatic.SentimentDetector
+import com.johnsnowlabs.nlp.annotator.UniversalSentenceEncoder
+import com.johnsnowlabs.nlp.annotators.classifier.dl.SentimentDLModel
+
 import com.johnsnowlabs.nlp.embeddings.BertEmbeddings
 import com.johnsnowlabs.nlp.base.DocumentAssembler
 import com.johnsnowlabs.nlp.annotators.{Tokenizer => JohnSnowTokenizer}
@@ -59,8 +61,6 @@ object Main {
       .select(from_json($"value", baseSchema) as "data")
       .select("data.*")
 
-    // processedDf.printSchema()
-
     // Fill na values
     val fillnaDf = processedDf.na
       .fill("", Seq("text", "title", "url", "by", "type"))
@@ -69,10 +69,6 @@ object Main {
       .withColumn("time", $"time".cast(TimestampType))
       .select("text")
 
-    // val fillnaDf = Seq(
-    //   "Spark NLP is an open-source text processing library for advanced natural language processing."
-    // ).toDF("text")
-
     val documentAssembler = new DocumentAssembler()
       .setInputCol("text")
       .setOutputCol("document")
@@ -80,6 +76,17 @@ object Main {
     val sentence = new SentenceDetector()
       .setInputCols("document")
       .setOutputCol("sentence")
+
+    val sentenceEmbeddings = UniversalSentenceEncoder
+      .pretrained()
+      .setInputCols("document")
+      .setOutputCol("sentence_embeddings")
+
+    val sentiment = SentimentDLModel
+      .pretrained("sentimentdl_use_twitter")
+      .setInputCols("sentence_embeddings")
+      .setThreshold(0.7f)
+      .setOutputCol("sentiment")
 
     val tokenizer = new Tokenizer()
       .setInputCol("text")
@@ -114,6 +121,8 @@ object Main {
           sentence,
           tokenizer,
           johnSnowTokenizer,
+          sentenceEmbeddings,
+          sentiment,
           // remover,
           hashingTF,
           embeddings
@@ -122,23 +131,29 @@ object Main {
       .fit(fillnaDf)
 
     val result = pipeline.transform(fillnaDf)
-
-    // result.show()
-
-    // cleanDf.printSchema()
-
     // Calculate TF IDF
 
     // val idfModel = idf.fit(featurizedData)
 
     // // Compute
     // // Word count
-    // val wordCount = result
-    //   .withColumn("wordCount", size(col("token")))
-    val query = result.writeStream
-      .outputMode("append")
-      .format("console")
-      .option("truncate", "true")
+    val wordCount = result
+      .withColumn("wordCount", size(col("token")))
+
+    // Kafka requires the data to be in a "value" column
+    // So convert the dataframe into a single json column
+    val query = wordCount
+      .select(to_json(struct("*")).as("value"))
+      .selectExpr("CAST(value AS STRING)")
+      .writeStream
+      // .outputMode("append")
+      .format("kafka")
+      .option(
+        "checkpointLocation",
+        "/tmp/spark/checkpoint"
+      ) // <-- checkpoint directory
+      .option("kafka.bootstrap.servers", "localhost:9092")
+      .option("topic", "updates")
       .start()
       .awaitTermination()
 

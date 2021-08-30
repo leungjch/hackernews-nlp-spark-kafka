@@ -74,10 +74,9 @@ public class ProducerApplication {
 					}
 
 				}
-				long wait = Math.round(Math.random() * 25);
-				Thread.sleep(wait);
 
-				Thread.sleep(1000);
+				// Update every 15 seconds
+				Thread.sleep(15000);
 
 			}
 		} catch (Exception e) {
