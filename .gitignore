@@ -1,5 +1,6 @@
 ../data
 *.json
 **/target/
-./crawl/main/data
+./crawl/
 ./.git/objects/pack/tmp_pack_Ppp3zL
+process/app-pyspark/models
