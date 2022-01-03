@@ -3,4 +3,4 @@
 **/target/
 ./crawl/
 ./.git/objects/pack/tmp_pack_Ppp3zL
-./process/app-pyspark/models
+process/app-pyspark/models
